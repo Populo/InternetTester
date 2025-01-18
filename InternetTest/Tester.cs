@@ -26,9 +26,9 @@ while (true)
         WarningTime = 100
     };
     
-    Test(outside);
-    Test(modem);
-    Test(router);
+    _ = Test(outside);
+    _ = Test(modem);
+    _ = Test(router);
 
     ++i;
     if (i == byte.MaxValue)
@@ -38,21 +38,22 @@ while (true)
         Console.ForegroundColor = ConsoleColor.Red;
         i = 0;
     }
-    Thread.Sleep(1000);
+    await Task.Delay(2000);
 }
 
-void Test(Destination dest)
+async Task Test(Destination dest)
 {
-    var ping = new Ping().Send(dest.Address);
+    var ping = new Ping();
+    var pr = await ping.SendPingAsync(dest.Address);
 
-    if (ping.Status != IPStatus.Success)
+    if (pr.Status != IPStatus.Success)
     {
         Console.WriteLine($"[{DateTime.Now}] {dest.Name} - Ping failed");
         dest.Failed = true;
     }
-    else if (ping.RoundtripTime > dest.WarningTime)
+    else if (pr.RoundtripTime > dest.WarningTime)
     {
-        Console.WriteLine($"[{DateTime.Now}] {dest.Name} - Slow ping {ping.RoundtripTime}ms");
+        Console.WriteLine($"[{DateTime.Now}] {dest.Name} - Slow ping {pr.RoundtripTime}ms");
         dest.Failed = true;
     }
     else
